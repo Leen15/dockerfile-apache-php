@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 
 # Labels
-LABEL maintainer "oscar.fanelli@gmail.com"
+LABEL maintainer "luca@smartdomotik.com"
 
 # Environment variables
 ENV PROJECT_PATH=/var/www \
