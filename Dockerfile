@@ -11,11 +11,13 @@ ENV PROJECT_PATH=/var/www \
     APACHE_RUN_GROUP=www-data \
     APACHE_LOG_DIR=/var/log/apache2 \
     APACHE_LOCK_DIR=/var/lock/apache2 \
-    PHP_INI=/etc/php/7.2/apache2/php.ini \
+    PHP_INI=/etc/php/7.4/apache2/php.ini \
     TERM=xterm
 
 # Update, upgrade and cURL installation
-RUN apt update -q && apt upgrade -yqq && apt install -yqq curl locales gnupg
+RUN apt-get update -q && apt-get upgrade -yqq && apt-get install -yqq \
+    curl locales gnupg \
+    apt-utils software-properties-common
 
 # Locale generator
 RUN locale-gen en_US.UTF-8
@@ -28,8 +30,11 @@ ENV LANG=en_US.UTF-8 \
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb http://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
+# PPA PHP 7.4
+RUN add-apt-repository ppa:ondrej/php
+
 # Utilities, Apache, PHP, and supplementary programs
-RUN apt update -q && apt install -yqq --force-yes \
+RUN apt-get update -q && apt-get install -yqq \
     git \
     npm \
     wget \
@@ -40,7 +45,7 @@ RUN apt update -q && apt install -yqq --force-yes \
     php \
     php-bcmath \
     php-curl \
-    php-dom \
+    php-xml \
     php-mbstring \
     php-intl
 
@@ -62,11 +67,11 @@ RUN sed -i "s/short_open_tag = .*/short_open_tag = On/" $PHP_INI && \
     sed -i "s/error_reporting = .*/error_reporting = E_ALL \& ~E_DEPRECATED \& ~E_STRICT/" $PHP_INI
 
 # Cleanup
-RUN apt purge -yq \
+RUN apt-get purge -yq \
       patch \
       software-properties-common \
       wget && \
-    apt autoremove -yqq
+    apt-get autoremove -yqq
 
 # VirtualHost
 COPY config/apache-virtualhost.conf /etc/apache2/sites-available/000-default.conf
