@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 # Labels
 LABEL maintainer "luca@smartdomotik.com"
@@ -30,8 +30,12 @@ ENV LANG=en_US.UTF-8 \
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb http://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
-# PPA PHP 7.4
-RUN add-apt-repository ppa:ondrej/php
+# PHP 7.4 from the Sury repository (same packages as the ondrej PPA, served outside Launchpad)
+RUN apt-get install -yqq lsb-release ca-certificates && \
+    curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb && \
+    dpkg -i /tmp/debsuryorg-archive-keyring.deb && \
+    rm /tmp/debsuryorg-archive-keyring.deb && \
+    echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
 
 # Utilities, Apache, PHP, and supplementary programs
 RUN apt-get update -q && apt-get install -yqq \
@@ -41,13 +45,13 @@ RUN apt-get update -q && apt-get install -yqq \
     yarn \
     zip \
     apache2 \
-    libapache2-mod-php \
-    php \
-    php-bcmath \
-    php-curl \
-    php-xml \
-    php-mbstring \
-    php-intl
+    libapache2-mod-php7.4 \
+    php7.4 \
+    php7.4-bcmath \
+    php7.4-curl \
+    php7.4-xml \
+    php7.4-mbstring \
+    php7.4-intl
 
 # Apache mods
 RUN a2enmod rewrite expires headers
